@@ -126,6 +126,8 @@ c.order_adjust_time = 5000
 c.max_sell_loss_pct = 25
 // ms to poll order status
 c.order_poll_time = 5000
+// ms to push report
+c.order_report_interval = 3600000
 // ms to wait for settlement (after an order cancel)
 c.wait_for_settlement = 5000
 // % to mark down buy price for orders

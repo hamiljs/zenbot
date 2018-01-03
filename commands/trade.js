@@ -13,6 +13,7 @@ var tb = require('timebucket')
 
 module.exports = function container (get, set, clear) {
   var c = get('conf')
+  // var notify = get('lib.notify')
   return function (program) {
     program
       .command('trade [selector]')
@@ -41,6 +42,7 @@ module.exports = function container (get, set, clear) {
       .option('--max_slippage_pct <pct>', 'avoid selling at a slippage pct above this float', c.max_slippage_pct)
       .option('--rsi_periods <periods>', 'number of periods to calculate RSI at', Number, c.rsi_periods)
       .option('--poll_trades <ms>', 'poll new trades at this interval in ms', Number, c.poll_trades)
+      .option('--report_interval <ms>', 'poll new trades at this interval in ms', Number, c.report_interval)
       .option('--disable_stats', 'disable printing order stats')
       .option('--reset_profit', 'start new profit calculation from 0')
       .option('--debug', 'output detailed debug info')
@@ -389,6 +391,9 @@ module.exports = function container (get, set, clear) {
                     lookback_size = s.lookback.length
                     forwardScan()
                     setInterval(forwardScan, so.poll_trades)
+                    if (so.report_interval > 0){
+                      setInterval(sendUpdate, so.report_interval)
+                    }
                     readline.emitKeypressEvents(process.stdin)
                     if (!so.non_interactive && process.stdin.setRawMode) {
                       process.stdin.setRawMode(true)
@@ -636,6 +641,10 @@ module.exports = function container (get, set, clear) {
               }
             })
           }
+        }
+        function sendUpdate () {
+          engine.reportOut()
+          return true
         }
       })
   }
