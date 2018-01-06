@@ -11,7 +11,7 @@ var tb = require('timebucket')
   , z = require('zero-fill')
   , cliff = require('cliff')
 
-module.exports = function container (get, set, clear) {
+module.exports = function container(get, set, clear) {
   var c = get('conf')
   // var notify = get('lib.notify')
   return function (program) {
@@ -98,8 +98,8 @@ module.exports = function container (get, set, clear) {
             console.log(' ' + key + ' - ' + value)
           })
         }
-        
-        function listOptions () {
+
+        function listOptions() {
           console.log()
           console.log(s.exchange.name.toUpperCase() + ' exchange active trading options:'.grey)
           console.log()
@@ -133,10 +133,10 @@ module.exports = function container (get, set, clear) {
             z(20, so.profit_stop_pct + '%', ' ')
           ].join('') + '\n')
           process.stdout.write('')
-        }              
+        }
 
         /* Implementing statistical Exit */
-        function printTrade (quit, dump) {
+        function printTrade(quit, dump) {
           console.log()
           var output_lines = []
           var tmp_balance = n(s.balance.currency).add(n(s.period.close).multiply(s.balance.asset)).format('0.00000000')
@@ -185,12 +185,12 @@ module.exports = function container (get, set, clear) {
               return colors.stripColors(line)
             }).join('\n')
             var data = s.lookback.slice(0, s.lookback.length - so.min_periods).map(function (period) {
-              var data = {};
-              var keys = Object.keys(period);
-              for(i = 0;i < keys.length;i++){
-                data[keys[i]] = period[keys[i]];
+              var data = {}
+              var keys = Object.keys(period)
+              for (i = 0; i < keys.length; i++) {
+                data[keys[i]] = period[keys[i]]
               }
-              return data;
+              return data
             })
             var code = 'var data = ' + JSON.stringify(data) + ';\n'
             code += 'var trades = ' + JSON.stringify(s.my_trades) + ';\n'
@@ -199,52 +199,55 @@ module.exports = function container (get, set, clear) {
               .replace('{{code}}', code)
               .replace('{{trend_ema_period}}', so.trend_ema || 36)
               .replace('{{output}}', html_output)
-              .replace(/\{\{symbol\}\}/g,  so.selector.normalized + ' - zenbot ' + require('../package.json').version)
+              .replace(/\{\{symbol\}\}/g, so.selector.normalized + ' - zenbot ' + require('../package.json').version)
             if (so.filename !== 'none') {
               var out_target
-              
-              if(dump){
-                var dt = new Date().toISOString();
-                
+
+              if (dump) {
+                var dt = new Date().toISOString()
+
                 //ymd
-                var today = dt.slice(2, 4) + dt.slice(5, 7) + dt.slice(8, 10);
-                out_target = so.filename || 'simulations/trade_result_' + so.selector.normalized +'_' + today + '_UTC.html'
-              fs.writeFileSync(out_target, out)
-              }else
-                out_target = so.filename || 'simulations/trade_result_' + so.selector.normalized +'_' + new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/-/g, '').replace(/:/g, '').replace(/20/, '') + '_UTC.html'
-              
+                var today = dt.slice(2, 4) + dt.slice(5, 7) + dt.slice(8, 10)
+                out_target = so.filename || 'simulations/trade_result_' + so.selector.normalized + '_' + today + '_UTC.html'
+                fs.writeFileSync(out_target, out)
+              } else
+                out_target = so.filename || 'simulations/trade_result_' + so.selector.normalized + '_' + new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/-/g, '').replace(/:/g, '').replace(/20/, '') + '_UTC.html'
+
               fs.writeFileSync(out_target, out)
               console.log('\nwrote'.grey, out_target)
             }
-            if(quit) process.exit(0)
+            if (quit) process.exit(0)
           }
         }
+
         /* The end of printTrade */
-        
+
         /* Implementing statistical status dump every 10 secs */
-        var shouldSaveStats = false;
-        function toggleStats(){
-          shouldSaveStats = !shouldSaveStats;
-          if(shouldSaveStats)
-            console.log("Auto stats dump enabled")
+        var shouldSaveStats = false
+
+        function toggleStats() {
+          shouldSaveStats = !shouldSaveStats
+          if (shouldSaveStats)
+            console.log('Auto stats dump enabled')
           else
-            console.log("Auto stats dump disabled")
+            console.log('Auto stats dump disabled')
         }
-        
-        function saveStatsLoop(){
+
+        function saveStatsLoop() {
           saveStats()
           setTimeout(function () {
             saveStatsLoop()
           }, 10000)
         }
+
         saveStatsLoop()
-        
-        function saveStats () {
-          if(!shouldSaveStats) return;
-          
+
+        function saveStats() {
+          if (!shouldSaveStats) return
+
           var output_lines = []
           var tmp_balance = n(s.balance.currency).add(n(s.period.close).multiply(s.balance.asset)).format('0.00000000')
-          
+
           var profit = s.start_capital ? n(tmp_balance).subtract(s.start_capital).divide(s.start_capital) : n(0)
           output_lines.push('last balance: ' + n(tmp_balance).format('0.00000000').yellow + ' (' + profit.format('0.00%') + ')')
           var buy_hold = s.start_price ? n(s.period.close).multiply(n(s.start_capital).divide(s.start_price)) : n(tmp_balance)
@@ -269,17 +272,17 @@ module.exports = function container (get, set, clear) {
             output_lines.push('win/loss: ' + (sells - losses) + '/' + losses)
             output_lines.push('error rate: ' + (sells ? n(losses).divide(sells).format('0.00%') : '0.00%').yellow)
           }
-          
+
           var html_output = output_lines.map(function (line) {
             return colors.stripColors(line)
           }).join('\n')
           var data = s.lookback.slice(0, s.lookback.length - so.min_periods).map(function (period) {
-            var data = {};
-            var keys = Object.keys(period);
-            for(i = 0;i < keys.length;i++){
-              data[keys[i]] = period[keys[i]];
+            var data = {}
+            var keys = Object.keys(period)
+            for (i = 0; i < keys.length; i++) {
+              data[keys[i]] = period[keys[i]]
             }
-            return data;
+            return data
           })
           var code = 'var data = ' + JSON.stringify(data) + ';\n'
           code += 'var trades = ' + JSON.stringify(s.my_trades) + ';\n'
@@ -288,20 +291,21 @@ module.exports = function container (get, set, clear) {
             .replace('{{code}}', code)
             .replace('{{trend_ema_period}}', so.trend_ema || 36)
             .replace('{{output}}', html_output)
-            .replace(/\{\{symbol\}\}/g,  so.selector.normalized + ' - zenbot ' + require('../package.json').version)
+            .replace(/\{\{symbol\}\}/g, so.selector.normalized + ' - zenbot ' + require('../package.json').version)
           if (so.filename !== 'none') {
             var out_target
-            var dt = new Date().toISOString();
-            
+            var dt = new Date().toISOString()
+
             //ymd
-            var today = dt.slice(2, 4) + dt.slice(5, 7) + dt.slice(8, 10);
-            out_target = so.filename || 'simulations/trade_result_' + so.selector.normalized +'_' + today + '_UTC.html'
+            var today = dt.slice(2, 4) + dt.slice(5, 7) + dt.slice(8, 10)
+            out_target = so.filename || 'simulations/trade_result_' + so.selector.normalized + '_' + today + '_UTC.html'
 
             fs.writeFileSync(out_target, out)
             //console.log('\nwrote'.grey, out_target)
           }
 
         }
+
         /* The end of printTrade */
 
         var order_types = ['maker', 'taker']
@@ -332,7 +336,7 @@ module.exports = function container (get, set, clear) {
         var periods = get('db.periods')
 
         console.log('fetching pre-roll data:')
-        var zenbot_cmd = process.platform === 'win32' ? 'zenbot.bat' : 'zenbot.sh'; // Use 'win32' for 64 bit windows too
+        var zenbot_cmd = process.platform === 'win32' ? 'zenbot.bat' : 'zenbot.sh' // Use 'win32' for 64 bit windows too
         var backfiller = spawn(path.resolve(__dirname, '..', zenbot_cmd), ['backfill', so.selector.normalized, '--days', days])
         backfiller.stdout.pipe(process.stdout)
         backfiller.stderr.pipe(process.stderr)
@@ -340,7 +344,8 @@ module.exports = function container (get, set, clear) {
           if (code) {
             process.exit(code)
           }
-          function getNext () {
+
+          function getNext() {
             var opts = {
               query: {
                 selector: so.selector.normalized
@@ -352,7 +357,7 @@ module.exports = function container (get, set, clear) {
               opts.query.time = {$gt: db_cursor}
             }
             else {
-              trade_cursor = s.exchange.getCursor(query_start) 
+              trade_cursor = s.exchange.getCursor(query_start)
               opts.query.time = {$gte: query_start}
             }
             get('db.trades').select(opts, function (err, trades) {
@@ -376,7 +381,11 @@ module.exports = function container (get, set, clear) {
                     mode: so.mode,
                     options: so
                   }
-                  sessions.select({query: {selector: so.selector.normalized}, limit: 1, sort: {started: -1}}, function (err, prev_sessions) {
+                  sessions.select({
+                    query: {selector: so.selector.normalized},
+                    limit: 1,
+                    sort: {started: -1}
+                  }, function (err, prev_sessions) {
                     if (err) throw err
                     var prev_session = prev_sessions[0]
                     if (prev_session && !cmd.reset_profit) {
@@ -391,7 +400,7 @@ module.exports = function container (get, set, clear) {
                     lookback_size = s.lookback.length
                     forwardScan()
                     setInterval(forwardScan, so.poll_trades)
-                    if (so.report_interval > 0){
+                    if (so.report_interval > 0) {
                       setInterval(sendUpdate, so.report_interval)
                     }
                     readline.emitKeypressEvents(process.stdin)
@@ -400,7 +409,7 @@ module.exports = function container (get, set, clear) {
                       process.stdin.on('keypress', function (key, info) {
                         if (key === 'l') {
                           listKeys()
-                        } else if (key === 'b' && !info.ctrl ) {
+                        } else if (key === 'b' && !info.ctrl) {
                           engine.executeSignal('buy')
                           console.log('\nmanual'.grey + ' limit ' + 'BUY'.green + ' command executed'.grey)
                         } else if (key === 'B' && !info.ctrl) {
@@ -463,13 +472,15 @@ module.exports = function container (get, set, clear) {
               })
             })
           }
+
           engine.writeHeader()
           getNext()
         })
 
         var prev_timeout = null
-        function forwardScan () {
-          function saveSession () {
+
+        function forwardScan() {
+          function saveSession() {
             engine.syncBalance(function (err) {
               if (!err && s.balance.asset === undefined) {
                 // TODO not the nicest place to verify the state, but did not found a better one
@@ -537,6 +548,7 @@ module.exports = function container (get, set, clear) {
               })
             })
           }
+
           var opts = {product_id: so.selector.product_id, from: trade_cursor}
           exchange.getTrades(opts, function (err, trades) {
             if (err) {
@@ -596,7 +608,8 @@ module.exports = function container (get, set, clear) {
                   })
                   my_trades_size = s.my_trades.length
                 }
-                function savePeriod (period) {
+
+                function savePeriod(period) {
                   if (!period.id) {
                     period.id = crypto.randomBytes(4).toString('hex')
                     period.selector = so.selector.normalized
@@ -609,6 +622,7 @@ module.exports = function container (get, set, clear) {
                     }
                   })
                 }
+
                 if (s.lookback.length > lookback_size) {
                   savePeriod(s.lookback[0])
                   lookback_size = s.lookback.length
@@ -623,7 +637,8 @@ module.exports = function container (get, set, clear) {
               saveSession()
             }
           })
-          function saveTrade (trade) {
+
+          function saveTrade(trade) {
             trade.id = so.selector.normalized + '-' + String(trade.trade_id)
             trade.selector = so.selector.normalized
             if (!marker.from) {
@@ -642,7 +657,8 @@ module.exports = function container (get, set, clear) {
             })
           }
         }
-        function sendUpdate () {
+
+        function sendUpdate() {
           engine.reportOut()
           return true
         }

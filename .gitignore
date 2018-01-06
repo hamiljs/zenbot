@@ -23,8 +23,10 @@ backtesting_*
 generation_data_*
 models/*.json
 models/*.html
+.idea/*
 *.pyc
 *.swp
 temp.html
 logs
 .sync
+/extensions/strategies/

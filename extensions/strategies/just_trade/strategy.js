@@ -4,7 +4,7 @@ var z = require('zero-fill')
 // Just Trade
 // Trade as fast as you can with a percentage above or below current price
 // Be sure to set
-module.exports = function container (get, set, clear) {
+module.exports = function container(get, set, clear) {
   return {
     name: 'just_trade',
     description: '',
@@ -16,15 +16,6 @@ module.exports = function container (get, set, clear) {
     },
 
     calculate: function (s) {
-      // if (typeof s.just_trade_position === 'undefined') {
-      //   if (s.options.start_with_assets == true){
-      //     s.just_trade_last_action='buy'
-      //   }
-      //   if (s.options.start_with_assets == false){
-      //     s.just_trade_last_action='sell'
-      //   }
-      // }
-
       if (typeof s.just_trade_start_price === 'undefined') {
         s.just_trade_start_price = 0
       }
@@ -32,7 +23,7 @@ module.exports = function container (get, set, clear) {
         s.just_trade_highest = s.period.high
       }
       if (typeof s.just_trade_lowest === 'undefined') {
-        s.just_trade_lowest = s.period.high
+        s.just_trade_lowest = s.period.low
       }
 
       if (s.period.high > s.just_trade_highest) {
@@ -43,42 +34,41 @@ module.exports = function container (get, set, clear) {
         s.just_trade_lowest = s.period.low
       }
 
-      s.just_trade_last_price=s.period.close
+      s.just_trade_last_price = s.period.close
 
-      s.signal=null
+      s.signal = null
 
     },
 
     onPeriod: function (s, cb) {
       // sell logic
-      if (s.action !== 'buying' && s.action !== 'selling'){
-        if ((s.just_trade_last_action !== 'sell' && s.action=='bought') || s.just_trade_last_action===null) {
+      if (s.action !== 'buying' && s.action !== 'selling') {
+        if ((s.just_trade_last_action !== 'sell' && s.action == 'bought') || s.just_trade_last_action === null) {
           s.signal = 'sell'
           s.just_trade_last_action = 'sell'
           s.just_trade_start_price = s.just_trade_last_price
           s.options.order_type = 'maker'
           return cb()
         } else {
-          if ((s.just_trade_last_action !== 'buy') || s.just_trade_last_action===null) {
-              s.signal = 'buy'
-              s.just_trade_last_action = 'buy'
-              s.just_trade_start_price = s.just_trade_last_price
-              s.options.order_type = 'taker'
-              return cb()
+          if ((s.just_trade_last_action !== 'buy') || s.just_trade_last_action === null) {
+            s.signal = 'buy'
+            s.just_trade_last_action = 'buy'
+            s.just_trade_start_price = s.just_trade_last_price
+            s.options.order_type = 'taker'
+            return cb()
           }
         }
       }
+
       // buy logic
-
-
       if (s.signal === null) {
-      if (s.just_trade_last_action===null){
-        s.signal = 'sell'
-        s.just_trade_last_action = 'sell'
-        s.just_trade_start_price = s.just_trade_last_price
-        s.options.order_type = 'maker'
-      } else {
-        s.signal = s.just_trade_last_action
+        if (s.just_trade_last_action === null) {
+          s.signal = 'sell'
+          s.just_trade_last_action = 'sell'
+          s.just_trade_start_price = s.just_trade_last_price
+          s.options.order_type = 'maker'
+        } else {
+          s.signal = s.just_trade_last_action
         }
       }
       return cb()
